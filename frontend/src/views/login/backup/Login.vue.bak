@@ -1,0 +1,168 @@
+<template>
+  <div class="login-container">
+    <LoginBackground />
+    
+    <div class="glass-card">
+      <LoginVisual />
+      <LoginForm :loading="loading" @submit="handleLogin" />
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { LoginApi } from '../../services/login/api'
+import type { LoginRequest } from '../../services/login/types'
+
+import { LoginBackground, LoginVisual, LoginForm } from '../../components'
+import { useLoginStore, useUserStore } from '../../stores'
+
+const router = useRouter()
+const loginStore = useLoginStore()
+const userStore = useUserStore()
+const loading = ref(false)
+
+const handleLogin = async (form: LoginRequest) => {
+  loading.value = true
+  
+  try {
+    // 1. 登录获取token
+    const response = await loginStore.login(form)
+    
+    // 2. 保存token
+    LoginApi.saveToken(response.access_token)
+    
+    // 3. 获取用户信息
+    const userInfo = LoginApi.getUserInfo()
+    if (!userInfo) {
+      throw new Error('获取用户信息失败')
+    }
+    userStore.setUserInfo(userInfo)
+    
+    // 4. 根据用户角色跳转到不同页面
+    if (userInfo.role === 'admin') {
+      router.push('/admin')
+    } else {
+      router.push('/workflows')
+    }
+  } catch (error: any) {
+    // 清理可能的部分数据
+    userStore.clearUserData()
+    
+    // 显示后端返回的错误信息
+    const errorMsg = error.response?.data?.detail || error.message || '登录失败，请稍后重试'
+    alert(errorMsg)
+  } finally {
+    loading.value = false
+  }
+}
+</script>
+
+<style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+
+/* 确保所有元素使用border-box */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+.login-container {
+  font-family: 'Inter', sans-serif;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  background-color: #fefefe;
+  overflow: hidden;
+  color: #1e293b;
+  padding: clamp(0.5rem, 2vw, 1.5rem);
+}
+
+.glass-card {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  width: 100%;
+  max-width: clamp(320px, 90vw, 1000px);
+  min-height: clamp(500px, 70vh, 640px);
+  background: 
+    linear-gradient(135deg, 
+      rgba(255, 255, 255, 0.95) 0%,
+      rgba(248, 250, 252, 0.9) 50%,
+      rgba(241, 245, 249, 0.85) 100%
+    );
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(0, 0, 0, 0.04);
+  border-radius: clamp(12px, 3vw, 24px);
+  box-shadow: 
+    0 25px 50px -12px rgba(0, 0, 0, 0.06),
+    0 0 0 1px rgba(255, 255, 255, 0.8),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  overflow: hidden;
+}
+
+.glass-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.02) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.015) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* 小屏手机 */
+@media (max-width: 480px) {
+  .login-container {
+    padding: 0.5rem;
+    align-items: flex-start;
+    padding-top: 2rem;
+  }
+  
+  .glass-card {
+    flex-direction: column;
+    min-height: auto;
+    max-height: none;
+    border: none;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.06);
+  }
+}
+
+/* 平板竖屏 */
+@media (max-width: 768px) and (min-width: 481px) {
+  .glass-card {
+    flex-direction: column;
+    max-width: 500px;
+    min-height: auto;
+  }
+}
+
+/* 平板横屏和小桌面 */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .glass-card {
+    max-width: 800px;
+  }
+}
+
+/* 大桌面 */
+@media (min-width: 1400px) {
+  .glass-card {
+    max-width: 1200px;
+  }
+}
+
+/* 超宽屏 */
+@media (min-width: 1920px) {
+  .glass-card {
+    max-width: 1400px;
+  }
+}
+</style>

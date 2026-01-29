@@ -1,0 +1,239 @@
+<!--
+ * @module LoginVisual
+ * @description 登录页面左侧视觉区域组件 - 包含品牌标识、产品介绍和连接动画
+ * @author AI Assistant
+ * @since 2024
+-->
+<template>
+  <div class="visual-side">
+    <div class="brand-area">
+      <div class="logo-box">
+        <div class="node-icon"></div>
+      </div>
+      <span class="brand-text">NEXUS AI</span>
+    </div>
+    
+    <div class="hero-text">
+      <h1>智能编排<br>连接无限可能</h1>
+      <p>Enterprise Agent Orchestration Platform</p>
+    </div>
+
+    <div class="connectivity-viz">
+      <div class="dot d1"></div>
+      <div class="dot d2"></div>
+      <div class="dot d3"></div>
+      <div class="line l1"></div>
+      <div class="line l2"></div>
+    </div>
+    
+    <div class="copyright">© 2024 Nexus Corp. All Systems Operational.</div>
+  </div>
+</template>
+
+<style scoped>
+.visual-side {
+  flex: 1;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(16, 185, 129, 0.04) 100%);
+  padding: clamp(1.5rem, 4vw, 3.75rem);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  border-right: 1px solid rgba(59, 130, 246, 0.1);
+  min-height: clamp(250px, 30vh, 400px);
+}
+
+.brand-area { 
+  display: flex; 
+  align-items: center; 
+  gap: 12px; 
+  margin-bottom: clamp(2rem, 8vw, 5rem); 
+}
+
+.logo-box {
+  width: clamp(32px, 5vw, 40px); 
+  height: clamp(32px, 5vw, 40px); 
+  background: linear-gradient(135deg, #3b82f6, #10b981);
+  border-radius: 10px; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.node-icon { 
+  width: 12px; 
+  height: 12px; 
+  background: #fff; 
+  border-radius: 50%; 
+  position: relative; 
+}
+
+.node-icon::after { 
+  content:''; 
+  position: absolute; 
+  width: 6px; 
+  height: 6px; 
+  background: rgba(255,255,255,0.5); 
+  top: -8px; 
+  right: -8px; 
+  border-radius: 50%;
+}
+
+.brand-text { 
+  font-size: clamp(1rem, 3vw, 1.2rem); 
+  font-weight: 600; 
+  letter-spacing: 1px;
+  color: #0f172a;
+  text-shadow: 0 1px 2px rgba(59, 130, 246, 0.1);
+}
+
+.hero-text h1 { 
+  font-size: clamp(1.5rem, 4vw + 0.5rem, 2.8rem); 
+  line-height: 1.2; 
+  margin-bottom: 16px; 
+  background: linear-gradient(135deg, #0f172a, #3b82f6, #10b981); 
+  -webkit-background-clip: text; 
+  -webkit-text-fill-color: transparent;
+  word-break: keep-all;
+  hyphens: none;
+}
+
+.hero-text p { 
+  color: #475569; 
+  font-size: clamp(0.85rem, 2.5vw, 1rem); 
+  font-weight: 400; 
+  letter-spacing: 0.5px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.connectivity-viz { 
+  position: absolute; 
+  top: 50%; 
+  right: clamp(20px, 5vw, 40px); 
+  width: clamp(120px, 20vw, 200px); 
+  height: clamp(120px, 20vw, 200px); 
+  opacity: 0.4; 
+  pointer-events: none; 
+}
+
+.dot { 
+  position: absolute; 
+  border-radius: 50%; 
+}
+
+.d1 { 
+  width: 8px; 
+  height: 8px; 
+  top: 0; 
+  left: 50%; 
+  background: #3b82f6;
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.5); 
+}
+
+.d2 { 
+  width: 6px; 
+  height: 6px; 
+  bottom: 20%; 
+  left: 0; 
+  background: #10b981;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+}
+
+.d3 { 
+  width: 6px; 
+  height: 6px; 
+  bottom: 40%; 
+  right: 0; 
+  background: #6366f1;
+  box-shadow: 0 0 8px rgba(99, 102, 241, 0.4);
+}
+
+.line { 
+  position: absolute; 
+  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.3), transparent); 
+  height: 1px; 
+  transform-origin: left center;
+}
+
+.l1 { 
+  top: 4px; 
+  left: 50%; 
+  width: 70%; 
+  transform: rotate(115deg); 
+}
+
+.l2 { 
+  top: 4px; 
+  left: 50%; 
+  width: 60%; 
+  transform: rotate(55deg); 
+}
+
+.copyright { 
+  margin-top: auto; 
+  font-size: clamp(0.7rem, 1.8vw, 0.75rem); 
+  color: #64748b;
+  opacity: 0.8;
+}
+
+/* 小屏手机 */
+@media (max-width: 480px) {
+  .visual-side {
+    border-right: none;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    text-align: center;
+    padding: 1.5rem 1rem;
+    min-height: auto;
+  }
+  
+  .connectivity-viz {
+    display: none;
+  }
+  
+  .brand-area {
+    justify-content: center;
+    margin-bottom: 1.5rem;
+  }
+  
+  .hero-text {
+    margin-bottom: 1.5rem;
+  }
+  
+  .hero-text h1 br {
+    display: none;
+  }
+}
+
+/* 平板 */
+@media (max-width: 768px) and (min-width: 481px) {
+  .visual-side {
+    border-right: none;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    text-align: center;
+    padding: 2rem 1.5rem;
+  }
+  
+  .connectivity-viz {
+    position: static;
+    margin: 2rem auto 0;
+    transform: scale(0.8);
+  }
+  
+  .brand-area {
+    justify-content: center;
+    margin-bottom: 2rem;
+  }
+}
+
+/* 小桌面/平板横屏 */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .visual-side {
+    padding: 2.5rem 2rem;
+  }
+  
+  .connectivity-viz {
+    right: 2rem;
+    transform: scale(0.9);
+  }
+}
+</style>

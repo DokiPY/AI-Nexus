@@ -1,0 +1,345 @@
+<!--
+ * @module LoginForm
+ * @description 登录表单组件 - 包含用户名密码输入、记住登录和提交功能
+ * @author AI Assistant
+ * @since 2024
+-->
+<template>
+  <div class="form-side">
+    <div class="form-content">
+      <h2 class="welcome-title">欢迎登录</h2>
+      <p class="welcome-sub">请输入您的企业账户以访问工作台</p>
+
+      <form @submit.prevent="handleSubmit">
+        <div class="input-group">
+          <label>企业邮箱 / Tenant ID</label>
+          <div class="field-wrapper" :class="{ 'focused': focusedField === 'user' }">
+            <i class="icon">🏢</i>
+            <input 
+              type="text" 
+              v-model="form.username" 
+              placeholder="name@company.com"
+              @focus="focusedField = 'user'"
+              @blur="focusedField = ''"
+            >
+            <div class="active-line"></div>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label>访问密钥 / Password</label>
+          <div class="field-wrapper" :class="{ 'focused': focusedField === 'pass' }">
+            <i class="icon">🔐</i>
+            <input 
+              type="password" 
+              v-model="form.password" 
+              placeholder="Enter your secure key"
+              @focus="focusedField = 'pass'"
+              @blur="focusedField = ''"
+            >
+            <div class="active-line"></div>
+          </div>
+        </div>
+
+        <div class="form-extras">
+          <label class="remember-me">
+            <input type="checkbox"> <span>保持登录状态</span>
+          </label>
+          <a href="#" class="forgot-link">无法登录?</a>
+        </div>
+
+        <button type="submit" class="primary-btn" :disabled="loading">
+          <span class="btn-text" v-if="!loading">进入工作台</span>
+          <div class="loader" v-else></div>
+          <div class="btn-glow"></div>
+        </button>
+      </form>
+    </div>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { reactive, ref } from 'vue'
+import type { LoginRequest } from '../../services/login/types'
+
+interface Props {
+  loading?: boolean
+}
+
+interface Emits {
+  (e: 'submit', form: LoginRequest): void
+}
+
+defineProps<Props>()
+const emit = defineEmits<Emits>()
+
+const focusedField = ref('')
+const form = reactive<LoginRequest>({
+  username: '',
+  password: ''
+})
+
+const handleSubmit = () => {
+  if (!form.username || !form.password) {
+    alert('请输入用户名和密码')
+    return
+  }
+  emit('submit', form)
+}
+</script>
+
+<style scoped>
+.form-side {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.04) 0%, rgba(59, 130, 246, 0.06) 100%);
+  padding: clamp(1.5rem, 4vw, 3rem) clamp(1rem, 3vw, 2rem);
+  min-height: clamp(400px, 50vh, 600px);
+}
+
+.form-content { 
+  width: 100%; 
+  max-width: 360px; 
+  padding: 0 20px; 
+}
+
+.welcome-title { 
+  font-size: clamp(1.25rem, 4vw + 0.25rem, 1.8rem); 
+  margin-bottom: 8px; 
+  font-weight: 700;
+  text-align: center;
+  background: linear-gradient(135deg, #0f172a, #3b82f6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.welcome-sub { 
+  color: #475569; 
+  font-size: clamp(0.75rem, 2.5vw + 0.1rem, 0.9rem); 
+  margin-bottom: clamp(2rem, 5vw, 2.5rem);
+  text-align: center;
+  line-height: 1.4;
+  opacity: 0.9;
+}
+
+.input-group { 
+  margin-bottom: 24px; 
+}
+
+.input-group label { 
+  display: block; 
+  font-size: clamp(0.75rem, 2vw, 0.85rem); 
+  color: #334155; 
+  margin-bottom: 8px; 
+  font-weight: 600; 
+}
+
+.field-wrapper {
+  position: relative;
+  display: flex; 
+  align-items: center;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(59, 130, 246, 0.1);
+  border-radius: clamp(8px, 2vw, 12px);
+  transition: all 0.3s ease;
+  min-height: clamp(44px, 6vw, 52px);
+}
+
+.field-wrapper:hover { 
+  background: rgba(255, 255, 255, 0.95); 
+  border-color: rgba(59, 130, 246, 0.2);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.05);
+}
+
+.field-wrapper.focused { 
+  background: rgba(255, 255, 255, 0.98); 
+  border-color: #3b82f6; 
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15), 0 4px 12px rgba(59, 130, 246, 0.1); 
+}
+
+.icon { 
+  padding: 0 16px; 
+  font-style: normal; 
+  font-size: 1.1rem; 
+  opacity: 0.7;
+  color: #3b82f6;
+}
+
+.field-wrapper input {
+  flex: 1; 
+  background: transparent; 
+  border: none; 
+  padding: clamp(12px, 3vw, 16px) clamp(12px, 3vw, 16px) clamp(12px, 3vw, 16px) 0; 
+  color: #1e293b; 
+  font-size: clamp(14px, 3.5vw, 16px); 
+  outline: none;
+}
+
+.field-wrapper input::placeholder { 
+  color: #64748b; 
+}
+
+.active-line {
+  position: absolute; 
+  bottom: -1px; 
+  left: 10%; 
+  width: 0; 
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #3b82f6, #10b981, transparent);
+  transition: width 0.4s ease, left 0.4s ease;
+}
+
+.field-wrapper.focused .active-line { 
+  width: 80%; 
+  left: 10%; 
+}
+
+.form-extras { 
+  display: flex; 
+  justify-content: space-between; 
+  margin-bottom: 32px; 
+  font-size: clamp(0.75rem, 2vw, 0.85rem); 
+  color: #64748b; 
+}
+
+.remember-me { 
+  display: flex; 
+  align-items: center; 
+  gap: 8px; 
+  cursor: pointer; 
+}
+
+.forgot-link { 
+  color: #3b82f6; 
+  text-decoration: none; 
+  transition: color 0.2s;
+}
+
+.forgot-link:hover { 
+  color: #1d4ed8; 
+}
+
+.primary-btn {
+  width: 100%; 
+  padding: clamp(14px, 4vw, 18px); 
+  border: none; 
+  border-radius: clamp(8px, 2vw, 12px);
+  background: linear-gradient(135deg, #3b82f6 0%, #10b981 100%);
+  color: white; 
+  font-size: clamp(14px, 3.5vw, 16px); 
+  font-weight: 600; 
+  cursor: pointer;
+  position: relative; 
+  overflow: hidden; 
+  transition: all 0.3s;
+  min-height: clamp(44px, 6vw, 52px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
+}
+
+.primary-btn:hover { 
+  transform: translateY(-1px); 
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.35), 0 4px 12px rgba(16, 185, 129, 0.2); 
+}
+
+.primary-btn:active { 
+  transform: translateY(0); 
+}
+
+.btn-glow {
+  position: absolute; 
+  top: 0; 
+  left: -100%; 
+  width: 50%; 
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transform: skewX(-20deg);
+  animation: shine 6s infinite;
+}
+
+@keyframes shine {
+  0%, 100% { left: -100%; }
+  10%, 20% { left: 200%; }
+}
+
+.loader {
+  width: 20px; 
+  height: 20px; 
+  border: 2px solid rgba(255,255,255,0.3); 
+  border-top-color: #fff; 
+  border-radius: 50%; 
+  margin: 0 auto;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin { 
+  100% { transform: rotate(360deg); } 
+}
+
+/* 小屏手机 */
+@media (max-width: 480px) {
+  .form-side {
+    padding: 1.5rem 1rem;
+    min-height: auto;
+  }
+  
+  .form-content {
+    padding: 0;
+    max-width: 100%;
+  }
+  
+  .welcome-sub {
+    margin-bottom: 2rem;
+  }
+  
+  .input-group {
+    margin-bottom: 1.25rem;
+  }
+  
+  .form-extras {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+  }
+  
+  .icon {
+    padding: 0 12px;
+    font-size: 1rem;
+  }
+}
+
+/* 平板 */
+@media (max-width: 768px) and (min-width: 481px) {
+  .form-side {
+    padding: 2rem 1.5rem;
+  }
+  
+  .form-content {
+    max-width: 400px;
+  }
+  
+  .form-extras {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+}
+
+/* 触摸设备优化 */
+@media (hover: none) and (pointer: coarse) {
+  .field-wrapper {
+    min-height: 48px;
+  }
+  
+  .primary-btn {
+    min-height: 48px;
+    padding: 16px;
+  }
+  
+  .primary-btn:hover {
+    transform: none;
+  }
+}
+</style>

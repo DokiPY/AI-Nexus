@@ -1,0 +1,88 @@
+<template>
+  <div class="login-background">
+    <div class="ambient-light one"></div>
+    <div class="ambient-light two"></div>
+    <div class="ambient-light three"></div> <!-- 新增一个光点增加层次 -->
+    <div class="stars"></div>
+    <div class="noise-overlay"></div> <!-- 新增噪点纹理增加质感 -->
+  </div>
+</template>
+
+<style scoped>
+.login-background {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  z-index: 0;
+  /* 更高级的冷白渐变 */
+  background: linear-gradient(180deg, #F8FAFC 0%, #F1F5F9 100%);
+}
+
+/* 噪点纹理 - 增加胶片感/高级感 */
+.noise-overlay {
+  position: absolute;
+  inset: 0;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1;
+}
+
+.ambient-light {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px); /* 略微减少模糊，让色彩更浓郁 */
+  opacity: 0.4;
+  z-index: 0;
+  will-change: transform; /* 性能优化 */
+}
+
+/* 主光 - 靛青色 */
+.one {
+  width: clamp(400px, 60vw, 800px); 
+  height: clamp(400px, 60vw, 800px);
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.8) 0%, rgba(168, 85, 247, 0.4) 100%);
+  top: -20%; 
+  left: -10%;
+  animation: float 20s infinite ease-in-out;
+}
+
+/* 辅光 - 莹蓝色 */
+.two {
+  width: clamp(300px, 50vw, 600px); 
+  height: clamp(300px, 50vw, 600px);
+  background: radial-gradient(circle, rgba(6, 182, 212, 0.6) 0%, rgba(59, 130, 246, 0.2) 100%);
+  bottom: -10%; 
+  right: -5%;
+  animation: float 18s infinite ease-in-out reverse;
+}
+
+/* 新增：点缀光 - 紫罗兰色 */
+.three {
+  width: clamp(200px, 30vw, 400px); 
+  height: clamp(200px, 30vw, 400px);
+  background: radial-gradient(circle, rgba(168, 85, 247, 0.5) 0%, transparent 70%);
+  top: 40%; 
+  left: 40%;
+  opacity: 0.2;
+  animation: float 25s infinite ease-in-out -5s;
+}
+
+.stars {
+  position: absolute; 
+  inset: 0;
+  /* 使用更细的网格点，颜色更淡 */
+  background-image: radial-gradient(rgba(99, 102, 241, 0.3) 1px, transparent 1px);
+  background-size: 32px 32px;
+  opacity: 0.4;
+  mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
+}
+
+@keyframes float {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  33% { transform: translate(30px, -50px) rotate(5deg); }
+  66% { transform: translate(-20px, 20px) rotate(-5deg); }
+}
+
+/* 媒体查询保持原样... */
+</style>
