@@ -6,7 +6,13 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
-    "preview": "vite preview"
+    "build:prod": "VITE_ENV=production vue-tsc -b && vite build",
+    "build:staging": "VITE_ENV=staging vue-tsc -b && vite build",
+    "build:test": "VITE_ENV=test vue-tsc -b && vite build",
+    "preview": "vite preview --outDir dist-local",
+    "preview:prod": "VITE_ENV=production vite preview --outDir dist-production",
+    "preview:staging": "VITE_ENV=staging vite preview --outDir dist-staging",
+    "preview:test": "VITE_ENV=test vite preview --outDir dist-test"
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.2",
@@ -31,3 +37,4 @@
     "vue-tsc": "^3.1.4"
   }
 }
+

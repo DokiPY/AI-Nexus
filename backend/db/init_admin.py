@@ -40,11 +40,11 @@ def init_admin():
     try:
         # 连接数据库
         conn = psycopg2.connect(
-            host=settings.DATABASE_HOST,
-            port=settings.DATABASE_PORT,
-            user=settings.DATABASE_USER,
-            password=settings.DATABASE_PASSWORD,
-            database=settings.DATABASE_NAME
+            host=settings.DB_HOST,
+            port=settings.DB_PORT,
+            user=settings.DB_USER,
+            password=settings.DB_PASSWORD,
+            database=settings.DB_NAME
         )
         cursor = conn.cursor()
         
@@ -105,3 +105,4 @@ def init_admin():
 
 if __name__ == "__main__":
     init_admin()
+

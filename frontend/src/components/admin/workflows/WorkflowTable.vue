@@ -86,7 +86,8 @@ interface WorkflowTableProps {
   pageSize?: number
 }
 
-const props = withDefaults(defineProps<WorkflowTableProps>(), {
+// Props are defined but not directly used in script - they're accessed in template
+withDefaults(defineProps<WorkflowTableProps>(), {
   currentPage: 1,
   pageSize: 10
 })

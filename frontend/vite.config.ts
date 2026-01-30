@@ -27,17 +27,36 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 5173
   },
+  preview: {
+    host: '0.0.0.0',
+    port: 5173,
+    allowedHosts: [
+      'nexus.berivena.com',
+      'localhost',
+      '127.0.0.1'
+    ]
+  },
   build: {
     outDir: `dist-${mode}`,
     chunkSizeWarningLimit: 1000,  // 提高警告阈值到 1000KB
     rollupOptions: {
       output: {
-        manualChunks: {
-          'element-plus': ['element-plus'],  // Element Plus 单独打包
-          'echarts': ['echarts'],            // ECharts 单独打包
-          'vendor': ['vue', 'vue-router', 'pinia']  // Vue 全家桶单独打包
+        manualChunks(id) {
+          // 将 node_modules 中的包按照包名分组
+          if (id.includes('node_modules')) {
+            if (id.includes('element-plus')) {
+              return 'element-plus'
+            }
+            if (id.includes('echarts')) {
+              return 'echarts'
+            }
+            if (id.includes('vue') || id.includes('pinia') || id.includes('@vue')) {
+              return 'vendor'
+            }
+          }
         }
       }
     }
   }
 })
+

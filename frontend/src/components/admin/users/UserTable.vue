@@ -85,7 +85,8 @@ interface UserTableProps {
   pageSize?: number
 }
 
-const props = withDefaults(defineProps<UserTableProps>(), {
+// Props are defined but not directly used in script - they're accessed in template
+withDefaults(defineProps<UserTableProps>(), {
   currentPage: 1,
   pageSize: 10
 })

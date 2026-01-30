@@ -105,8 +105,7 @@ const {
   searchQuery,
   roleFilter,
   statusFilter,
-  companyIdsFilter,
-  hasActiveFilters,
+  // companyIdsFilter and hasActiveFilters are not used in template
   currentPage,
   pageSize,
   totalUsers,
@@ -127,7 +126,7 @@ const {
   saveWorkflowPermissions,
   handleSizeChange,
   handleCurrentChange,
-  clearFilters,
+  // clearFilters is not used in template
   handleSortChange,
   handleRefresh
 } = useUserManagement()
