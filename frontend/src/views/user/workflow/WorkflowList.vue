@@ -172,8 +172,8 @@ const send = async () => {
           agentIdx = messages.value.length - 1
         } else {
           // 后续 chunk：通过替换数组元素触发 Vue 响应式更新
-          const prev = messages.value[agentIdx]
-          messages.value[agentIdx] = { ...prev, content: prev.content + chunk }
+          const prev = messages.value[agentIdx]!
+          messages.value[agentIdx] = { role: prev.role, content: prev.content + chunk }
         }
       }
     )

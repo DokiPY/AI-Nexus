@@ -16,7 +16,7 @@ interface CompanyForm {
 export function useCompanyManagement() {
   const allCompanies = ref<Company[]>([])
   const { loading, executeRefresh } = useRefreshControl()
-  const { loadCompanies: loadCompaniesFromStore, setCompanies: setStoreCompanies } = useAdminDataStore()
+  const { setCompanies: setStoreCompanies } = useAdminDataStore()
   const searchQuery = ref('')
   
   const currentPage = ref(1)
