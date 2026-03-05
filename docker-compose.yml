@@ -1,0 +1,54 @@
+# docker-compose.yml
+# ============================================
+# 用法:
+#   docker compose --env-file .env.production up -d --build
+#   docker compose --env-file .env.staging up -d --build
+# ============================================
+
+services:
+  backend:
+    container_name: ai-nexus-backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      # 环境标识
+      - ENV=${ENV:-production}
+      # 数据库配置 - 每个环境不同，通过 env_file 或环境变量注入
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT:-5432}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME:-ai_agent_platform}
+      # JWT
+      - SECRET_KEY=${SECRET_KEY}
+      - ALGORITHM=${ALGORITHM:-HS256}
+      - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES:-480}
+      # CORS
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
+      # 应用配置
+      - DEBUG=${DEBUG:-false}
+    restart: unless-stopped
+    networks:
+      - ai-nexus
+
+  frontend:
+    container_name: ai-nexus-frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_ENV: ${VITE_ENV:-production}
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - ai-nexus
+
+networks:
+  ai-nexus:
+    driver: bridge

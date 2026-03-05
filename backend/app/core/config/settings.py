@@ -66,32 +66,33 @@ class Settings(BaseSettings):
         env_file_encoding = "utf-8"
         case_sensitive = True
 
-# 工厂函数：根据环境动态加载配置
+# 环境 → .env 文件映射
+_ENV_FILE_MAP = {
+    "local": ".env",
+    "test": ".env.test",
+    "staging": ".env.staging",
+    "production": ".env.production",
+}
+
 def get_settings() -> Settings:
-    """根据 ENV 环境变量加载对应配置"""
+    """根据 ENV 环境变量加载对应配置
     
-    if ENV == "local":
-        # 本地开发环境，使用 .env 文件
-        print(f"🔥 当前环境: {ENV}, 加载配置: .env")
-        return Settings()
+    优先级：系统环境变量 > .env 文件 > 默认值
+    容器部署时不需要 .env 文件，全部通过环境变量注入即可
+    """
+    env_filename = _ENV_FILE_MAP.get(ENV)
+    if env_filename is None:
+        raise ValueError(f"未知的环境配置: {ENV}，支持的环境: {', '.join(_ENV_FILE_MAP.keys())}")
     
-    elif ENV == "test":
-        # 测试环境
-        print(f"🔥 当前环境: {ENV}, 加载配置: .env.test")
-        return Settings(_env_file=str(BASE_DIR / ".env.test"))
+    env_file_path = BASE_DIR / env_filename
     
-    elif ENV == "staging":
-        # 预发布环境
-        print(f"🔥 当前环境: {ENV}, 加载配置: .env.staging")
-        return Settings(_env_file=str(BASE_DIR / ".env.staging"))
-    
-    elif ENV == "production":
-        # 生产环境
-        print(f"🔥 当前环境: {ENV}, 加载配置: .env.production")
-        return Settings(_env_file=str(BASE_DIR / ".env.production"))
-    
+    if env_file_path.is_file():
+        print(f"🔥 当前环境: {ENV}, 加载配置: {env_filename}")
+        return Settings(_env_file=str(env_file_path))
     else:
-        raise ValueError(f"未知的环境配置: {ENV}，支持的环境: local, test, staging, production")
+        # 容器环境下没有 .env 文件，完全依赖环境变量
+        print(f"🔥 当前环境: {ENV}, 未找到 {env_filename}，使用环境变量")
+        return Settings(_env_file=None)
 
 # 创建配置实例
 settings = get_settings()
