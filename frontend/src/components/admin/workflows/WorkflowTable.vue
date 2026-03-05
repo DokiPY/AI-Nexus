@@ -76,7 +76,7 @@ interface Workflow {
   category: string
   http_method: string
   n8n_webhook_url: string
-  stream_enabled?: boolean
+  stream_enabled: boolean
   icon?: string
   created_at: string
   updated_at?: string
@@ -161,7 +161,7 @@ const getCategoryStyle = (category: string) => {
     categoryColorMap.set(category, nextColorIndex % CATEGORY_COLORS.length)
     nextColorIndex++
   }
-  const palette = CATEGORY_COLORS[categoryColorMap.get(category)!]
+  const palette = CATEGORY_COLORS[categoryColorMap.get(category)!]!
   return {
     backgroundColor: palette.bg,
     color: palette.color,
