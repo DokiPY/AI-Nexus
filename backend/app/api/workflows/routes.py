@@ -1,14 +1,16 @@
+"""用户工作流列表API路由"""
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from typing import List
 
 from app.database.connection import get_db
-from app.api.deps import get_current_active_user, get_current_admin_user
+from app.api.deps import get_current_active_user
 from app.models.user import User
-from app.models.workflow import Workflow, CompanyWorkflow, UserWorkflow
-from app.schemas.workflow import WorkflowResponse, WorkflowCreate, WorkflowUpdate
+from app.models.workflow import Workflow, UserWorkflow
+from app.schemas.response import success_response
 
 router = APIRouter()
+
 
 @router.get("/", summary="获取用户可用的工作流列表")
 async def get_user_workflows(
@@ -16,7 +18,7 @@ async def get_user_workflows(
     current_user: User = Depends(get_current_active_user),
     db: Session = Depends(get_db)
 ):
-    """获取工作流列表"""
+    """获取当前用户可访问的工作流列表"""
     
     # 获取用户被授权的工作流ID
     user_workflow_ids = set(
@@ -30,7 +32,11 @@ async def get_user_workflows(
         query = db.query(Workflow).filter(Workflow.is_active == True)
     else:
         if not user_workflow_ids:
-            return {"total_workflows": 0, "available_count": 0, "workflows": []}
+            return success_response(data={
+                "total_workflows": 0,
+                "available_count": 0,
+                "workflows": []
+            })
         query = db.query(Workflow).filter(
             Workflow.id.in_(user_workflow_ids),
             Workflow.is_active == True
@@ -53,17 +59,19 @@ async def get_user_workflows(
             "icon": workflow.icon,
             "category": workflow.category,
             "n8n_webhook_url": workflow.n8n_webhook_url,
+            "stream_enabled": getattr(workflow, 'stream_enabled', True),
             "is_active": workflow.is_active,
             "has_permission": has_permission,
             "status": "available",
             "created_at": workflow.created_at.isoformat() if workflow.created_at else None
         })
     
-    return {
+    return success_response(data={
         "total_workflows": len(result),
         "available_count": len(result),
         "workflows": result
-    }
+    })
+
 
 @router.get("/categories", summary="获取用户可见的工作流分类")
 async def get_user_workflow_categories(
@@ -84,7 +92,7 @@ async def get_user_workflow_categories(
             ).all()
         ]
         if not user_workflow_ids:
-            return {"categories": ["全部"]}
+            return success_response(data={"categories": ["全部"]})
         
         categories = db.query(Workflow.category).filter(
             Workflow.id.in_(user_workflow_ids),
@@ -93,5 +101,4 @@ async def get_user_workflow_categories(
     
     category_list = ["全部"] + [cat[0] for cat in categories if cat[0]]
     
-    return {"categories": category_list}
-
+    return success_response(data={"categories": category_list})

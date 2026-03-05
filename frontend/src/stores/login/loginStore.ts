@@ -22,12 +22,16 @@ export const useLoginStore = defineStore('login', () => {
     try {
       const response = await LoginApi.login(credentials)
       
+      // login() 使用原生 fetch，后端返回标准格式 { success, code, message, data }
+      // 手动解包 data 层
+      const userInfo = (response as any).data ?? (response as any).user_info ?? response
+      
       // 保存用户信息到localStorage
-      LoginApi.saveUserInfo(response.user_info)
+      LoginApi.saveUserInfo(userInfo)
       
       // 设置UserStore
       const userStore = useUserStore()
-      userStore.setUserInfo(response.user_info)
+      userStore.setUserInfo(userInfo)
       
       // 验证HttpOnly Cookie（开发环境）
       if (import.meta.env.DEV) {

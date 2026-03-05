@@ -10,7 +10,11 @@ const mode = process.env.VITE_ENV || 'local'
 // 动态加载对应的 .env 文件
 dotenv.config({ path: `.env.${mode}` })
 
+// 获取后端代理目标地址（从 .env 文件读取）
+const apiProxyTarget = process.env.VITE_API_PROXY_TARGET || 'http://localhost:8000'
+
 console.log(`🔥 当前环境: ${mode}, 加载配置: .env.${mode}`)
+console.log(`🔗 API 代理目标: ${apiProxyTarget}`)
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -25,7 +29,14 @@ export default defineConfig({
   },
   server: {
     host: '0.0.0.0',
-    port: 5173
+    port: 5173,
+    proxy: {
+      // 所有 API 请求代理到后端，避免跨域
+      '/api/v1': {
+        target: apiProxyTarget,
+        changeOrigin: true,
+      },
+    },
   },
   preview: {
     host: '0.0.0.0',

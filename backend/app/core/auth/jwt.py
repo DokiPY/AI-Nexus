@@ -6,7 +6,7 @@
 from datetime import datetime, timedelta, timezone
 from typing import Optional, Dict, Any
 from jose import JWTError, jwt
-from app.core.config import settings
+from app.core.config.settings import settings
 
 def create_access_token(data: Dict[str, Any], expires_delta: Optional[timedelta] = None) -> str:
     """创建 JWT 访问令牌

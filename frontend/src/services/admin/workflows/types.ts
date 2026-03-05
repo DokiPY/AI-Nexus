@@ -7,6 +7,7 @@ export interface Workflow {
   category: string
   http_method: string
   n8n_webhook_url: string
+  stream_enabled: boolean
   icon?: string
   created_at: string
   updated_at?: string
@@ -18,6 +19,7 @@ export interface CreateWorkflowRequest {
   category: string
   http_method: string
   n8n_webhook_url: string
+  stream_enabled?: boolean
   icon?: string
 }
 
@@ -27,5 +29,6 @@ export interface UpdateWorkflowRequest {
   category?: string
   http_method?: string
   n8n_webhook_url?: string
+  stream_enabled?: boolean
   icon?: string
 }

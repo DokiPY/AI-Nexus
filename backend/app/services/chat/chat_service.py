@@ -1,11 +1,18 @@
-from sqlalchemy.orm import Session
-from fastapi import HTTPException
-from datetime import datetime
+"""聊天服务"""
+
+import json
 import time
+import logging
+from sqlalchemy.orm import Session
+from datetime import datetime
+from typing import AsyncGenerator
 
 from app.models.workflow import Workflow, UserWorkflow, ChatLog, ChatSession
 from app.models.user import User
 from app.services.n8n_service import N8NService
+from app.core.errors.exceptions import NotFoundException, PermissionDeniedException
+
+logger = logging.getLogger(__name__)
 
 
 class ChatService:
@@ -13,7 +20,13 @@ class ChatService:
     
     @staticmethod
     def check_workflow_permission(db: Session, user: User, workflow_id: int) -> Workflow:
-        """检查用户是否有权限访问工作流"""
+        """
+        检查用户是否有权限访问工作流
+        
+        Raises:
+            PermissionDeniedException: 用户无权限
+            NotFoundException: 工作流不存在
+        """
         if user.role != "admin":
             permission = db.query(UserWorkflow).filter(
                 UserWorkflow.user_id == user.id,
@@ -21,14 +34,11 @@ class ChatService:
             ).first()
             
             if not permission:
-                raise HTTPException(
-                    status_code=403,
-                    detail="您没有权限使用该工作流，请联系管理员开通权限"
-                )
+                raise PermissionDeniedException("您没有权限使用该工作流，请联系管理员开通权限")
         
         workflow = db.query(Workflow).filter(Workflow.id == workflow_id).first()
         if not workflow:
-            raise HTTPException(status_code=404, detail="工作流不存在")
+            raise NotFoundException("工作流不存在")
         
         return workflow
     
@@ -163,3 +173,78 @@ class ChatService:
             db.commit()
         
         return {"message": "聊天记录已清空"}
+
+    @staticmethod
+    async def send_message_stream(
+        db: Session, user: User, workflow_id: int, message: str
+    ) -> AsyncGenerator[str, None]:
+        """流式发送聊天消息，yield SSE 格式的事件。
+        根据 workflow.stream_enabled 自动选择流式或非流式调用 N8N。
+        """
+        workflow = ChatService.check_workflow_permission(db, user, workflow_id)
+        session = ChatService.get_or_create_session(db, user.id, workflow_id, message[:50])
+
+        # 保存用户消息
+        user_message = ChatLog(
+            session_id=session.id,
+            user_id=user.id,
+            workflow_id=workflow_id,
+            role="user",
+            message=message
+        )
+        db.add(user_message)
+        db.commit()
+        db.refresh(user_message)
+
+        # 发送用户消息确认事件
+        yield f"data: {json.dumps({'type': 'user_message', 'data': {'id': user_message.id, 'role': 'user', 'message': user_message.message, 'created_at': user_message.created_at.isoformat()}}, ensure_ascii=False)}\n\n"
+
+        user_info = {
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+            "company_id": user.company_id
+        }
+
+        full_response = ""
+        start_time = time.time()
+        stream_enabled = getattr(workflow, 'stream_enabled', None)
+        if stream_enabled is None:
+            stream_enabled = True
+
+        if stream_enabled:
+            # 流式调用 N8N
+            async for chunk in N8NService.call_workflow_stream(
+                webhook_url=workflow.n8n_webhook_url,
+                user_message=message,
+                user_info=user_info
+            ):
+                full_response += chunk
+                yield f"data: {json.dumps({'type': 'chunk', 'content': chunk}, ensure_ascii=False)}\n\n"
+        else:
+            # 非流式调用 N8N，一次性返回完整结果
+            full_response = await N8NService.call_workflow(
+                webhook_url=workflow.n8n_webhook_url,
+                user_message=message,
+                user_info=user_info
+            )
+            yield f"data: {json.dumps({'type': 'chunk', 'content': full_response}, ensure_ascii=False)}\n\n"
+
+        response_time_ms = int((time.time() - start_time) * 1000)
+
+        # 保存完整的 AI 回复
+        ai_message = ChatLog(
+            session_id=session.id,
+            user_id=user.id,
+            workflow_id=workflow_id,
+            role="ai",
+            message=full_response,
+            response_time_ms=response_time_ms
+        )
+        db.add(ai_message)
+        session.updated_at = datetime.utcnow()
+        db.commit()
+        db.refresh(ai_message)
+
+        # 发送完成事件
+        yield f"data: {json.dumps({'type': 'done', 'data': {'id': ai_message.id, 'response_time_ms': response_time_ms}}, ensure_ascii=False)}\n\n"

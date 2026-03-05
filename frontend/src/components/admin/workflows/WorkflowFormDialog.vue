@@ -16,11 +16,20 @@
         <el-input v-model="form.description" type="textarea" :rows="3" placeholder="请输入工作流描述" />
       </el-form-item>
       <el-form-item label="分类" required>
-        <el-select v-model="form.category" placeholder="请选择分类" style="width: 100%">
-          <el-option label="办公助手" value="办公助手" />
-          <el-option label="数据分析" value="数据分析" />
-          <el-option label="客户服务" value="客户服务" />
-          <el-option label="开发工具" value="开发工具" />
+        <el-select
+          v-model="form.category"
+          placeholder="请选择或输入新分类"
+          style="width: 100%"
+          filterable
+          allow-create
+          default-first-option
+        >
+          <el-option
+            v-for="cat in categories"
+            :key="cat"
+            :label="cat"
+            :value="cat"
+          />
         </el-select>
       </el-form-item>
       <el-form-item label="请求方式" required>
@@ -33,6 +42,15 @@
       </el-form-item>
       <el-form-item label="N8N Webhook URL" required>
         <el-input v-model="form.n8n_webhook_url" placeholder="https://your-n8n.com/webhook/..." />
+      </el-form-item>
+      <el-form-item label="流式响应">
+        <el-switch
+          v-model="form.stream_enabled"
+          active-text="开启"
+          inactive-text="关闭"
+          inline-prompt
+        />
+        <span class="form-tip">N8N 使用 Respond to Webhook 一次性返回时请关闭</span>
       </el-form-item>
       <el-form-item label="图标">
         <el-input v-model="form.icon" placeholder="输入 emoji 或图标" />
@@ -54,6 +72,7 @@ interface WorkflowForm {
   category: string
   http_method: string
   n8n_webhook_url: string
+  stream_enabled: boolean
   icon: string
 }
 
@@ -61,6 +80,7 @@ interface WorkflowFormDialogProps {
   visible: boolean
   form: WorkflowForm
   isEdit: boolean
+  categories: string[]
 }
 
 defineProps<WorkflowFormDialogProps>()
@@ -80,5 +100,11 @@ defineEmits<{
 .form :deep(.el-input__wrapper),
 .form :deep(.el-select__wrapper) {
   border-radius: 12px;
+}
+
+.form-tip {
+  font-size: 12px;
+  color: #94a3b8;
+  margin-left: 12px;
 }
 </style>

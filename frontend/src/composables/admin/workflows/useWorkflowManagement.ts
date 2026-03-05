@@ -10,6 +10,7 @@ interface WorkflowForm {
   category: string
   http_method: string
   n8n_webhook_url: string
+  stream_enabled: boolean
   icon: string
 }
 
@@ -24,13 +25,15 @@ export function useWorkflowManagement() {
   const showCreateDialog = ref(false)
   const showEditDialog = ref(false)
   const currentWorkflow = ref<Workflow | null>(null)
+  const categories = ref<string[]>([])
 
   const workflowForm = ref<WorkflowForm>({
     name: '',
     description: '',
-    category: '办公助手',
+    category: '',
     http_method: 'POST',
     n8n_webhook_url: '',
+    stream_enabled: true,
     icon: ''
   })
 
@@ -62,6 +65,14 @@ export function useWorkflowManagement() {
     }, showSuccessMsg)
   }
 
+  const loadCategories = async () => {
+    try {
+      categories.value = await WorkflowManagementApi.getCategories()
+    } catch {
+      // 静默失败，分类不影响主流程
+    }
+  }
+
   const editWorkflow = (workflow: Workflow) => {
     currentWorkflow.value = workflow
     workflowForm.value = {
@@ -70,6 +81,7 @@ export function useWorkflowManagement() {
       category: workflow.category,
       http_method: workflow.http_method,
       n8n_webhook_url: workflow.n8n_webhook_url,
+      stream_enabled: workflow.stream_enabled ?? true,
       icon: workflow.icon || ''
     }
     showEditDialog.value = true
@@ -111,10 +123,10 @@ export function useWorkflowManagement() {
           category: workflowForm.value.category,
           http_method: workflowForm.value.http_method,
           n8n_webhook_url: workflowForm.value.n8n_webhook_url,
+          stream_enabled: workflowForm.value.stream_enabled,
           icon: workflowForm.value.icon
         }
         await WorkflowManagementApi.updateWorkflow(currentWorkflow.value.id, updateData)
-        await loadWorkflows()
         ElMessage.success('更新成功')
       } else {
         const createData: CreateWorkflowRequest = {
@@ -123,10 +135,10 @@ export function useWorkflowManagement() {
           category: workflowForm.value.category,
           http_method: workflowForm.value.http_method,
           n8n_webhook_url: workflowForm.value.n8n_webhook_url,
+          stream_enabled: workflowForm.value.stream_enabled,
           icon: workflowForm.value.icon
         }
         await WorkflowManagementApi.createWorkflow(createData)
-        await loadWorkflows()
         ElMessage.success('创建成功')
       }
       
@@ -138,15 +150,20 @@ export function useWorkflowManagement() {
     } finally {
       loading.value = false
     }
+
+    // 在 loading 释放后刷新列表，避免 executeRefresh 的 loading 守卫跳过请求
+    await loadWorkflows()
+    await loadCategories()
   }
 
   const resetForm = () => {
     workflowForm.value = {
       name: '',
       description: '',
-      category: '办公助手',
+      category: '',
       http_method: 'POST',
       n8n_webhook_url: '',
+      stream_enabled: true,
       icon: ''
     }
     currentWorkflow.value = null
@@ -176,7 +193,9 @@ export function useWorkflowManagement() {
     showEditDialog,
     workflowForm,
     paginatedWorkflows,
+    categories,
     loadWorkflows,
+    loadCategories,
     editWorkflow,
     deleteWorkflow,
     saveWorkflow,

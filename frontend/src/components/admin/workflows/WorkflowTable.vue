@@ -29,7 +29,7 @@
       </el-table-column>
       <el-table-column prop="category" label="分类" min-width="120">
         <template #default="scope">
-          <span class="status-badge" :class="getCategoryClass(scope.row.category)">
+          <span class="status-badge category-dynamic" :style="getCategoryStyle(scope.row.category)">
             <span class="status-dot"></span>
             {{ scope.row.category }}
           </span>
@@ -120,13 +120,11 @@ const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString('zh-CN')
 }
 
-// 使用统一的蓝色，与品牌色和UI保持一致
-const getAvatarStyle = () => {
-  return {
-    background: 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)',
-    color: '#0284c7'
-  }
-}
+// 深蓝渐变 + 白字
+const getAvatarStyle = () => ({
+  background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+  color: '#fff'
+})
 
 // 根据请求方式返回对应的样式类
 const getMethodClass = (method: string) => {
@@ -139,15 +137,34 @@ const getMethodClass = (method: string) => {
   return classes[method] || 'method-post'
 }
 
-// 根据分类返回对应的样式类
-const getCategoryClass = (category: string) => {
-  const classes: Record<string, string> = {
-    '办公助手': 'category-office',
-    '数据分析': 'category-data',
-    '客户服务': 'category-service',
-    '开发工具': 'category-dev'
+// 分类颜色配置
+const CATEGORY_COLORS: { bg: string; color: string; border: string; dot: string }[] = [
+  { bg: '#eff6ff', color: '#2563eb', border: '#bfdbfe', dot: '#3b82f6' },   // 蓝
+  { bg: '#faf5ff', color: '#9333ea', border: '#e9d5ff', dot: '#a855f7' },   // 紫
+  { bg: '#ecfeff', color: '#0891b2', border: '#a5f3fc', dot: '#06b6d4' },   // 青
+  { bg: '#ecfdf5', color: '#059669', border: '#a7f3d0', dot: '#10b981' },   // 绿
+  { bg: '#fff7ed', color: '#ea580c', border: '#fed7aa', dot: '#f97316' },   // 橙
+  { bg: '#fef2f2', color: '#dc2626', border: '#fecaca', dot: '#ef4444' },   // 红
+  { bg: '#fefce8', color: '#ca8a04', border: '#fef08a', dot: '#eab308' },   // 黄
+  { bg: '#f0fdf4', color: '#16a34a', border: '#bbf7d0', dot: '#22c55e' },   // 浅绿
+]
+
+// 缓存分类 → 颜色索引映射
+const categoryColorMap = new Map<string, number>()
+let nextColorIndex = 0
+
+const getCategoryStyle = (category: string) => {
+  if (!categoryColorMap.has(category)) {
+    categoryColorMap.set(category, nextColorIndex % CATEGORY_COLORS.length)
+    nextColorIndex++
   }
-  return classes[category] || 'category-office'
+  const palette = CATEGORY_COLORS[categoryColorMap.get(category)!]
+  return {
+    backgroundColor: palette.bg,
+    color: palette.color,
+    borderColor: palette.border,
+    '--dot-color': palette.dot
+  }
 }
 </script>
 
@@ -257,49 +274,13 @@ const getCategoryClass = (category: string) => {
   background-color: #10b981;
 }
 
-/* 分类样式 - 不同分类不同颜色 */
-/* 办公助手 - 蓝色 */
-.status-badge.category-office {
-  background-color: #eff6ff;
-  color: #2563eb;
-  border-color: #bfdbfe;
+/* 动态分类样式 */
+.status-badge.category-dynamic {
+  border: 1px solid;
 }
 
-.status-badge.category-office .status-dot {
-  background-color: #3b82f6;
-}
-
-/* 数据分析 - 紫色 */
-.status-badge.category-data {
-  background-color: #faf5ff;
-  color: #9333ea;
-  border-color: #e9d5ff;
-}
-
-.status-badge.category-data .status-dot {
-  background-color: #a855f7;
-}
-
-/* 客户服务 - 青色 */
-.status-badge.category-service {
-  background-color: #ecfeff;
-  color: #0891b2;
-  border-color: #a5f3fc;
-}
-
-.status-badge.category-service .status-dot {
-  background-color: #06b6d4;
-}
-
-/* 开发工具 - 绿色 */
-.status-badge.category-dev {
-  background-color: #ecfdf5;
-  color: #059669;
-  border-color: #a7f3d0;
-}
-
-.status-badge.category-dev .status-dot {
-  background-color: #10b981;
+.status-badge.category-dynamic .status-dot {
+  background-color: var(--dot-color);
 }
 
 /* POST - 绿色 */
@@ -357,38 +338,19 @@ const getCategoryClass = (category: string) => {
 }
 
 .workflow-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
-  font-size: 15px;
+  font-weight: 600;
+  font-size: 14px;
   flex-shrink: 0;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
-  text-shadow: none;
   position: relative;
   overflow: hidden;
-  transition: all 0.2s ease;
-}
-
-.workflow-avatar:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-  transform: translateY(-2px);
-}
-
-/* 精致的光泽效果 */
-.workflow-avatar::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.1) 40%, rgba(0, 0, 0, 0.03) 100%);
-  border-radius: 12px;
-  pointer-events: none;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4), 0 1px 2px rgba(0, 0, 0, 0.1);
+  letter-spacing: 0.5px;
 }
 
 .workflow-detail {

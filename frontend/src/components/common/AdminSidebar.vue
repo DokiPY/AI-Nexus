@@ -74,32 +74,13 @@
 
     <!-- 底部时间天气 -->
     <div class="sidebar-footer">
-      <div class="weather-widget" :class="{ mini: collapsed }">
-        <div class="weather-icon-box">
-          <!-- 简单的太阳图标，代表晴朗天气 -->
-          <svg class="weather-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="5"></circle>
-            <line x1="12" y1="1" x2="12" y2="3"></line>
-            <line x1="12" y1="21" x2="12" y2="23"></line>
-            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-            <line x1="1" y1="12" x2="3" y2="12"></line>
-            <line x1="21" y1="12" x2="23" y2="12"></line>
-            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-          </svg>
-        </div>
-        <div class="time-info">
-          <div class="current-time">{{ currentTime }}</div>
-          <div class="current-date">{{ currentDate }}</div>
-        </div>
-      </div>
+      <WeatherWidget :mini="collapsed" />
     </div>
   </aside>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import WeatherWidget from './WeatherWidget.vue'
 
 interface MenuItem {
   key: string
@@ -118,26 +99,6 @@ defineEmits<{
   toggle: []
   'menu-change': [key: string]
 }>()
-
-// 时间管理
-const currentTime = ref('')
-const currentDate = ref('')
-let timer: number | null = null
-
-const updateTime = () => {
-  const now = new Date()
-  currentTime.value = now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
-  currentDate.value = now.toLocaleDateString('zh-CN', { month: 'long', day: 'numeric', weekday: 'short' })
-}
-
-onMounted(() => {
-  updateTime()
-  timer = window.setInterval(updateTime, 1000 * 60) // 每分钟更新
-})
-
-onUnmounted(() => {
-  if (timer) clearInterval(timer)
-})
 </script>
 
 <style scoped>
@@ -404,82 +365,6 @@ onUnmounted(() => {
   border-top: 1px solid rgba(226, 232, 240, 0.6);
 }
 
-.weather-widget {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px;
-  border-radius: 12px;
-  transition: all 0.2s ease;
-  background: transparent;
-  color: var(--text-secondary);
-}
-
-/* 移除 hover 背景，保持极简，或者可以加非常淡的背景 */
-.weather-widget:hover {
-  background: #f8fafc;
-}
-
-.weather-widget.mini {
-  justify-content: center;
-  padding: 12px 0;
-  gap: 0;
-}
-
-.weather-icon-box {
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  color: #f59e0b; /* 太阳颜色 */
-}
-
-.weather-icon {
-  width: 24px;
-  height: 24px;
-  animation: spin 10s linear infinite; /* 缓慢旋转的太阳 */
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-.time-info {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  transition: opacity 0.2s, transform 0.2s;
-  opacity: 1;
-  transform: translateX(0);
-}
-
-.weather-widget.mini .time-info {
-  opacity: 0;
-  transform: translateX(10px);
-  position: absolute;
-  pointer-events: none;
-}
-
-.current-time {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  line-height: 1.2;
-  font-family: 'Inter', sans-serif; /* 数字字体更好看 */
-  letter-spacing: -0.5px;
-}
-
-.current-date {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  margin-top: 2px;
-  white-space: nowrap;
-}
-
 /* 移动端适配 */
 @media (max-width: 768px) {
   .sidebar {
@@ -498,17 +383,10 @@ onUnmounted(() => {
   }
   
   .sidebar.collapsed .nav-text,
-  .sidebar.collapsed .status-badge,
-  .sidebar.collapsed .time-info {
+  .sidebar.collapsed .status-badge {
     opacity: 1;
     transform: none;
     position: static;
-  }
-  
-  .sidebar.collapsed .weather-widget.mini {
-     justify-content: flex-start;
-     gap: 12px;
-     padding: 12px;
   }
 }
 </style>

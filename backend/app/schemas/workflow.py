@@ -19,6 +19,7 @@ class WorkflowCreate(BaseModel):
     icon: Optional[str] = None
     category: str = "办公助手"
     http_method: str = "POST"
+    stream_enabled: bool = True
 
 class WorkflowUpdate(BaseModel):
     name: Optional[str] = None
@@ -27,3 +28,4 @@ class WorkflowUpdate(BaseModel):
     icon: Optional[str] = None
     category: Optional[str] = None
     http_method: Optional[str] = None
+    stream_enabled: Optional[bool] = None

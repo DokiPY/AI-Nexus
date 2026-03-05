@@ -16,7 +16,7 @@ interface CompanyForm {
 export function useCompanyManagement() {
   const allCompanies = ref<Company[]>([])
   const { loading, executeRefresh } = useRefreshControl()
-  const { loadCompanies: loadCompaniesFromStore } = useAdminDataStore()
+  const { loadCompanies: loadCompaniesFromStore, setCompanies: setStoreCompanies } = useAdminDataStore()
   const searchQuery = ref('')
   
   const currentPage = ref(1)
@@ -54,11 +54,14 @@ export function useCompanyManagement() {
     return filteredCompanies.value.slice(start, end)
   })
 
-  // 加载公司列表
+  // 加载公司列表，同时同步 store 缓存
   const loadCompanies = async (showSuccessMsg = false) => {
     await executeRefresh(async () => {
       try {
-        allCompanies.value = await CompanyApi.getCompanies()
+        const result = await CompanyApi.getCompanies()
+        allCompanies.value = result.companies ?? []
+        // 直接同步到 store 缓存，避免额外请求
+        setStoreCompanies(allCompanies.value)
       } catch (error: any) {
         ElMessage.error(error.message || '加载公司列表失败')
         throw error
@@ -106,8 +109,6 @@ export function useCompanyManagement() {
       
       await CompanyApi.deleteCompany(company.id)
       await loadCompanies()
-      // 强制刷新缓存，确保用户管理页面不会看到已删除的公司
-      await loadCompaniesFromStore(true)
       ElMessage.success('公司删除成功')
     } catch (error: any) {
       if (error !== 'cancel') {
@@ -135,8 +136,6 @@ export function useCompanyManagement() {
         ElMessage.success('公司更新成功')
       }
       await loadCompanies()
-      // 强制刷新缓存，确保用户管理页面能看到最新公司列表
-      await loadCompaniesFromStore(true)
       closeDialog()
     } catch (error: any) {
       ElMessage.error(error.message || '保存失败')

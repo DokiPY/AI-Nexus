@@ -9,7 +9,16 @@ export class WorkflowApi {
    * 获取所有工作流 - GET /admin/workflows/
    */
   static async getWorkflows(): Promise<Workflow[]> {
-    return http.get<Workflow[]>('/admin/workflows/')
+    const data = await http.get<{ workflows: Workflow[] }>('/admin/workflows/')
+    return data?.workflows ?? []
+  }
+
+  /**
+   * 获取工作流分类 - GET /admin/workflows/categories
+   */
+  static async getCategories(): Promise<string[]> {
+    const data = await http.get<{ categories: string[] }>('/admin/workflows/categories')
+    return data?.categories ?? []
   }
 
   /**

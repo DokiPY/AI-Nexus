@@ -3,8 +3,8 @@
 """
 import psycopg2
 from getpass import getpass
-from app.core.security import get_password_hash
-from app.core.config import settings
+from app.core.auth.security import get_password_hash
+from app.core.config.settings import settings
 
 def init_admin():
     print("=" * 50)

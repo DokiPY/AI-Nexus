@@ -158,32 +158,39 @@ const send = async () => {
   isTyping.value = true
 
   try {
-    const response = await WorkflowApi.sendMessage(activeWorkflow.value.id, {
-      message: userMessage
-    })
-    
-    const agentMessage = {
-      role: 'agent' as const,
-      content: response.ai_message.message
-    }
-    
-    messages.value.push(agentMessage)
-    
+    // 等待 SSE 第一个 chunk 到达后再创建 agent 气泡，避免和 typing 动画重叠
+    let agentIdx = -1
+
+    const fullText = await WorkflowApi.sendMessageStream(
+      activeWorkflow.value.id,
+      { message: userMessage },
+      (chunk: string) => {
+        if (agentIdx === -1) {
+          // 收到第一个 chunk：关闭 typing 动画，插入 agent 消息
+          isTyping.value = false
+          messages.value.push({ role: 'agent', content: chunk })
+          agentIdx = messages.value.length - 1
+        } else {
+          // 后续 chunk：通过替换数组元素触发 Vue 响应式更新
+          const prev = messages.value[agentIdx]
+          messages.value[agentIdx] = { ...prev, content: prev.content + chunk }
+        }
+      }
+    )
+
     // 更新缓存
     if (chatHistoryCache.has(activeWorkflow.value.id)) {
       const cached = chatHistoryCache.get(activeWorkflow.value.id) || []
       chatHistoryCache.set(activeWorkflow.value.id, [
         ...cached,
         { role: 'user' as const, content: userMessage },
-        agentMessage
+        { role: 'agent' as const, content: fullText }
       ])
     }
   } catch (error: any) {
+    // 出错时显示错误提示
+    messages.value.push({ role: 'agent', content: '抱歉，消息发送失败，请稍后重试。' })
     ElMessage.error(error.message || '发送消息失败')
-    messages.value.push({
-      role: 'agent',
-      content: '抱歉，消息发送失败，请稍后重试。'
-    })
   } finally {
     isTyping.value = false
   }

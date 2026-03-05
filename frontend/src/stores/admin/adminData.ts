@@ -28,12 +28,19 @@ export function useAdminDataStore() {
     
     companiesLoading.value = true
     try {
-      companies.value = await CompanyApi.getCompanies()
+      const result = await CompanyApi.getCompanies()
+      companies.value = result.companies ?? []
       companiesLoaded.value = true
       return companies.value
     } finally {
       companiesLoading.value = false
     }
+  }
+
+  // 直接设置公司列表缓存，避免重复请求
+  const setCompanies = (data: Company[]) => {
+    companies.value = data
+    companiesLoaded.value = true
   }
 
   const clearCache = () => {
@@ -45,6 +52,7 @@ export function useAdminDataStore() {
     companies,
     companiesLoaded,
     loadCompanies,
+    setCompanies,
     clearCache
   }
 }

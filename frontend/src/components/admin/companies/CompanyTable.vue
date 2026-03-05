@@ -78,13 +78,11 @@ const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString('zh-CN')
 }
 
-// 使用统一的蓝色，与品牌色和UI保持一致
-const getAvatarStyle = () => {
-  return {
-    background: 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)',
-    color: '#0284c7'
-  }
-}
+// 深蓝渐变 + 白字
+const getAvatarStyle = () => ({
+  background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+  color: '#fff'
+})
 </script>
 
 <style scoped>
@@ -225,38 +223,19 @@ const getAvatarStyle = () => {
 }
 
 .company-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
-  font-size: 15px;
+  font-weight: 600;
+  font-size: 14px;
   flex-shrink: 0;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
-  text-shadow: none;
   position: relative;
   overflow: hidden;
-  transition: all 0.2s ease;
-}
-
-.company-avatar:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-  transform: translateY(-2px);
-}
-
-/* 精致的光泽效果 */
-.company-avatar::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.1) 40%, rgba(0, 0, 0, 0.03) 100%);
-  border-radius: 12px;
-  pointer-events: none;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4), 0 1px 2px rgba(0, 0, 0, 0.1);
+  letter-spacing: 0.5px;
 }
 
 .company-detail {

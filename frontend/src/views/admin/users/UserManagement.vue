@@ -171,14 +171,15 @@ onMounted(() => {
 .filter-select :deep(.el-input__wrapper) {
   border-radius: 10px;
   box-shadow: none;
-  background: rgba(248, 250, 252, 0.9);
-  border: 1px solid rgba(0, 0, 0, 0.06);
-  transition: border-color 0.2s ease, background 0.2s ease;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
   height: 40px;
 }
 
 .filter-select :deep(.el-input__wrapper.is-focus) {
-  border-color: rgba(59, 130, 246, 0.35);
-  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(59, 130, 246, 0.4);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.08);
+  background: #ffffff;
 }
 </style>

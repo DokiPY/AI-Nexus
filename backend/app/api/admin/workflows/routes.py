@@ -1,13 +1,33 @@
-from fastapi import APIRouter, Depends
+"""管理员工作流管理API路由"""
+
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
 from app.database.connection import get_db
 from app.api.deps import get_current_admin_user
 from app.models.user import User
-from app.models.workflow import Workflow
+from app.models.workflow import Workflow, UserWorkflow, CompanyWorkflow
 from app.schemas.workflow import WorkflowCreate, WorkflowUpdate
+from app.schemas.response import success_response
+from app.core.errors.exceptions import NotFoundException
 
 router = APIRouter()
+
+
+@router.get("/categories", summary="获取所有工作流分类")
+async def get_workflow_categories(
+    db: Session = Depends(get_db),
+    admin_user: User = Depends(get_current_admin_user)
+):
+    """管理员获取所有工作流分类（从已有工作流中提取）"""
+    categories = db.query(Workflow.category).filter(
+        Workflow.is_active == True
+    ).distinct().all()
+
+    category_list = sorted(set(cat[0] for cat in categories if cat[0]))
+
+    return success_response(data={"categories": category_list})
+
 
 @router.get("/", summary="获取所有工作流")
 async def get_all_workflows(
@@ -16,7 +36,8 @@ async def get_all_workflows(
 ):
     """管理员获取所有工作流列表"""
     workflows = db.query(Workflow).filter(Workflow.is_active == True).all()
-    return [{
+    
+    workflow_list = [{
         "id": w.id,
         "name": w.name,
         "description": w.description,
@@ -24,10 +45,14 @@ async def get_all_workflows(
         "category": w.category,
         "n8n_webhook_url": w.n8n_webhook_url,
         "http_method": getattr(w, 'http_method', 'POST'),
+        "stream_enabled": getattr(w, 'stream_enabled', True),
         "created_at": w.created_at.isoformat() if w.created_at else None
     } for w in workflows]
+    
+    return success_response(data={"workflows": workflow_list})
 
-@router.post("/", summary="创建工作流")
+
+@router.post("/", summary="创建工作流", status_code=status.HTTP_201_CREATED)
 async def create_workflow(
     workflow: WorkflowCreate,
     db: Session = Depends(get_db),
@@ -38,7 +63,17 @@ async def create_workflow(
     db.add(db_workflow)
     db.commit()
     db.refresh(db_workflow)
-    return {"message": "工作流创建成功", "id": db_workflow.id}
+    
+    return success_response(
+        data={
+            "id": db_workflow.id,
+            "name": db_workflow.name,
+            "category": db_workflow.category
+        },
+        message="工作流创建成功",
+        code=201
+    )
+
 
 @router.put("/{workflow_id}", summary="更新工作流")
 async def update_workflow(
@@ -50,13 +85,22 @@ async def update_workflow(
     """管理员更新工作流"""
     db_workflow = db.query(Workflow).filter(Workflow.id == workflow_id).first()
     if not db_workflow:
-        return {"error": "工作流不存在"}
+        raise NotFoundException("工作流不存在")
     
     for key, value in workflow.dict(exclude_unset=True).items():
         setattr(db_workflow, key, value)
     
     db.commit()
-    return {"message": "工作流更新成功"}
+    db.refresh(db_workflow)
+    
+    return success_response(
+        data={
+            "id": db_workflow.id,
+            "name": db_workflow.name
+        },
+        message="工作流更新成功"
+    )
+
 
 @router.delete("/{workflow_id}", summary="删除工作流")
 async def delete_workflow(
@@ -65,11 +109,9 @@ async def delete_workflow(
     admin_user: User = Depends(get_current_admin_user)
 ):
     """管理员删除工作流（软删除）"""
-    from app.models.workflow import UserWorkflow, CompanyWorkflow
-    
     db_workflow = db.query(Workflow).filter(Workflow.id == workflow_id).first()
     if not db_workflow:
-        return {"error": "工作流不存在"}
+        raise NotFoundException("工作流不存在")
     
     # 软删除工作流
     db_workflow.is_active = False
@@ -81,4 +123,5 @@ async def delete_workflow(
     db.query(CompanyWorkflow).filter(CompanyWorkflow.workflow_id == workflow_id).delete()
     
     db.commit()
-    return {"message": "工作流删除成功"}
+    
+    return success_response(message="工作流删除成功")

@@ -52,14 +52,16 @@ export class UserApi {
    * 获取所有公司信息 - GET /admin/companies
    */
   static async getCompanies(): Promise<Company[]> {
-    return http.get<Company[]>('/admin/companies')
+    const data = await http.get<{ companies: Company[] }>('/admin/companies')
+    return data?.companies ?? []
   }
 
   /**
    * 获取所有工作流 - GET /admin/workflows/
    */
   static async getWorkflows(): Promise<Workflow[]> {
-    return http.get<Workflow[]>('/admin/workflows/')
+    const data = await http.get<{ workflows: Workflow[] }>('/admin/workflows/')
+    return data?.workflows ?? []
   }
 
   /**

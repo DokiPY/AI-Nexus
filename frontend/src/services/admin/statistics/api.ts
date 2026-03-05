@@ -17,31 +17,38 @@ export class StatisticsApi {
   }
 
   static async getChatTrend(days: number = 7): Promise<ChatTrend[]> {
-    return http.get<ChatTrend[]>('/admin/statistics/trend', { days })
+    const data = await http.get<{ trend: ChatTrend[] }>('/admin/statistics/trend', { days })
+    return data?.trend ?? []
   }
 
   static async getWorkflowRanking(limit: number = 10): Promise<WorkflowRanking[]> {
-    return http.get<WorkflowRanking[]>('/admin/statistics/workflow-ranking', { limit })
+    const data = await http.get<{ ranking: WorkflowRanking[] }>('/admin/statistics/workflow-ranking', { limit })
+    return data?.ranking ?? []
   }
 
   static async getCompanyDistribution(): Promise<CompanyDistribution[]> {
-    return http.get<CompanyDistribution[]>('/admin/statistics/company-distribution')
+    const data = await http.get<{ distribution: CompanyDistribution[] }>('/admin/statistics/company-distribution')
+    return data?.distribution ?? []
   }
 
   static async getUserActivity(days: number = 7, limit: number = 20): Promise<CompanyUserActivity[]> {
-    return http.get<CompanyUserActivity[]>('/admin/statistics/user-activity', { days, limit })
+    const data = await http.get<{ activity: CompanyUserActivity[] }>('/admin/statistics/user-activity', { days, limit })
+    return data?.activity ?? []
   }
 
   static async getResponseTimeDistribution(): Promise<ResponseTimeDistribution[]> {
-    return http.get<ResponseTimeDistribution[]>('/admin/statistics/response-time-distribution')
+    const data = await http.get<{ distribution: ResponseTimeDistribution[] }>('/admin/statistics/response-time-distribution')
+    return data?.distribution ?? []
   }
 
   static async getResponseTimeByWorkflow(days: number = 7, limit: number = 10): Promise<ResponseTimeByWorkflow[]> {
-    return http.get<ResponseTimeByWorkflow[]>('/admin/statistics/response-time-by-workflow', { days, limit })
+    const data = await http.get<{ ranking: ResponseTimeByWorkflow[] }>('/admin/statistics/response-time-by-workflow', { days, limit })
+    return data?.ranking ?? []
   }
 
   static async getHourlyHeatmap(): Promise<HourlyHeatmap[]> {
-    return http.get<HourlyHeatmap[]>('/admin/statistics/hourly-heatmap')
+    const data = await http.get<{ heatmap: HourlyHeatmap[] }>('/admin/statistics/hourly-heatmap')
+    return data?.heatmap ?? []
   }
 
   static async getRecentChats(page: number = 1, pageSize: number = 20): Promise<RecentChatsResponse> {

@@ -12,8 +12,12 @@
     
     <!-- 右侧用户区 -->
     <div class="nav-user">
-      <div class="tenant-badge">
-        <span class="icon">🏢</span> 
+      <div class="tenant-badge" v-if="tenantName">
+        <svg class="tenant-icon" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="2" y="2" width="14" height="15" rx="1.2" stroke="currentColor" stroke-width="1.4"/>
+          <path d="M6 6h2M10 6h2M6 9h2M10 9h2M6 12h2M10 12h2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+          <path d="M7 17v-4h4v4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
         <span class="text">{{ tenantName }}</span>
       </div>
       
@@ -69,7 +73,7 @@ const userEmail = computed(() => userStore.userInfo?.email || 'admin@nexus.com')
 const userAvatar = computed(() => 
   `https://api.dicebear.com/7.x/notionists/svg?seed=${userStore.userInfo?.username || 'admin'}&backgroundColor=6366f1`
 )
-const tenantName = 'Nexus Platform'
+const tenantName = computed(() => userStore.userInfo?.company?.name || '')
 
 const emit = defineEmits<{
   logout: []
@@ -164,7 +168,12 @@ const handleLogout = async () => {
   border-color: rgba(99, 102, 241, 0.2);
   color: #475569;
 }
-.tenant-badge .icon { font-size: 1rem; }
+.tenant-badge .tenant-icon {
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+  color: #94a3b8;
+}
 
 /* 用户头像与下拉 */
 .user-profile { 

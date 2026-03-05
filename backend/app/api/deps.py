@@ -10,7 +10,7 @@ async def get_current_active_user(
 ) -> User:
     """获取当前活跃用户"""
     if not current_user.is_active:
-        raise HTTPException(status_code=400, detail="Inactive user")
+        raise HTTPException(status_code=400, detail="用户已被禁用")
     return current_user
 
 async def get_current_admin_user(

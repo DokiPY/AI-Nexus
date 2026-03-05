@@ -1,14 +1,14 @@
 # 登录认证服务层
 
 from sqlalchemy.orm import Session
-from fastapi import HTTPException, status
 from datetime import timedelta, datetime
 
 from app.models.user import User
 from app.models.company import Company
-from app.core.security import verify_password
-from app.core.jwt import create_access_token
-from app.core.config import settings
+from app.core.auth.security import verify_password
+from app.core.auth.jwt import create_access_token
+from app.core.config.settings import settings
+from app.core.errors.exceptions import UnauthorizedException, PermissionDeniedException
 
 
 class AuthService:
@@ -28,31 +28,23 @@ class AuthService:
             验证成功的用户对象
             
         Raises:
-            HTTPException: 用户不存在、密码错误或账号未激活
+            UnauthorizedException: 用户不存在或密码错误
+            PermissionDeniedException: 账号被禁用
         """
         # 查找用户(不限制is_active)
         user = db.query(User).filter(User.username == username).first()
         
         # 用户不存在
         if not user:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="账号或密码错误"
-            )
+            raise UnauthorizedException("账号或密码错误")
         
         # 密码错误
         if not verify_password(password, user.password_hash):
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="账号或密码错误"
-            )
+            raise UnauthorizedException("账号或密码错误")
         
         # 账号被禁用
         if not user.is_active:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="账号已被禁用，请联系管理员"
-            )
+            raise PermissionDeniedException("账号已被禁用，请联系管理员")
         
         return user
     

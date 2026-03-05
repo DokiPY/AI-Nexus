@@ -13,6 +13,7 @@ class Workflow(Base):
     http_method = Column(String(10), default="POST")  # POST, GET, PUT, DELETE
     icon = Column(String(255))
     category = Column(String(100), default="办公助手")  # 办公助手, 数据分析, 客户服务, 开发工具
+    stream_enabled = Column(Boolean, default=True)  # 是否启用流式响应
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

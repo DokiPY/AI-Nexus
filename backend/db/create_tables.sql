@@ -36,6 +36,7 @@ CREATE TABLE workflows (
     http_method VARCHAR(10) DEFAULT 'POST',
     icon VARCHAR(255),
     category VARCHAR(100) DEFAULT '办公助手',
+    stream_enabled BOOLEAN DEFAULT TRUE,
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

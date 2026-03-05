@@ -76,7 +76,17 @@ class HttpClient {
       return undefined as T
     }
 
-    return await response.json()
+    const json = await response.json()
+
+    // 统一解包后端标准响应格式 { success, code, message, data }
+    if (json && typeof json === 'object' && 'success' in json) {
+      if (!json.success) {
+        throw new Error(json.message || '请求失败')
+      }
+      return json.data as T
+    }
+
+    return json as T
   }
 
   /**
@@ -115,5 +125,5 @@ class HttpClient {
 }
 
 // 导出单例
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1'
 export const http = new HttpClient(API_BASE_URL)

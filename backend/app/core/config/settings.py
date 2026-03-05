@@ -10,7 +10,7 @@ from typing import List, Optional
 from pathlib import Path
 
 # 获取项目根目录（backend/）
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent.parent
 
 # 获取环境变量，默认为 local
 ENV = os.getenv('ENV', 'local')

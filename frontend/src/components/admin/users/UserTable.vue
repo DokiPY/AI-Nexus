@@ -1,17 +1,16 @@
-<template>
+﻿<template>
   <!-- 表格容器 -->
   <div class="table-container" v-loading="loading" element-loading-background="rgba(255, 255, 255, 0.8)" element-loading-text="加载中...">
     <el-table 
       :data="users" 
       style="width: 100%"
-      stripe
       highlight-current-row
-      :row-style="{ height: '64px' }"
+      :row-style="{ height: '72px' }"
     >
     <el-table-column label="用户" min-width="240">
       <template #default="scope">
         <div class="user-info-cell">
-          <div class="user-avatar" :style="getAvatarStyle()">
+          <div class="user-avatar" :style="getAvatarStyle(scope.row.username)">
             {{ scope.row.username.charAt(0).toUpperCase() }}
           </div>
           <div class="user-detail">
@@ -124,13 +123,10 @@ const formatDate = (dateString: string) => {
   return new Date(dateString).toLocaleDateString('zh-CN')
 }
 
-// 使用统一的蓝色，与品牌色和UI保持一致
-const getAvatarStyle = () => {
-  return {
-    background: 'linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%)',
-    color: '#0284c7'
-  }
-}
+const getAvatarStyle = (_username: string) => ({
+  background: 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)',
+  color: '#fff'
+})
 </script>
 
 <style scoped>
@@ -142,26 +138,173 @@ const getAvatarStyle = () => {
   overflow: hidden;
   min-height: 400px;
   background: #ffffff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
-.table-container :deep(.el-loading-mask) {
-  border-radius: 14px;
-}
-
+.table-container :deep(.el-loading-mask) { border-radius: 14px; }
 .table-container :deep(.el-loading-spinner) {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  margin: 0;
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%); margin: 0;
+}
+.table-container :deep(.el-loading-spinner .circular) { width: 42px; height: 42px; }
+
+/* 列头 */
+.table-container :deep(.el-table__header th.el-table__cell) {
+  background: rgba(248, 250, 252, 0.95);
+  color: #475569;
+  font-weight: 600;
+  font-size: 12px;
+  padding: 13px 0;
+  letter-spacing: 0.4px;
+  border-bottom: 1px solid #e2e8f0;
 }
 
-.table-container :deep(.el-loading-spinner .circular) {
-  width: 42px;
-  height: 42px;
+/* 行 */
+.table-container :deep(.el-table__body td.el-table__cell) {
+  padding: 12px 0;
+  color: #334155;
+  font-size: 13px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
 }
 
+.table-container :deep(.el-table) {
+  --el-table-border-color: rgba(0, 0, 0, 0.06);
+}
+
+/* hover */
+.table-container :deep(.el-table__body tr.hover-row > td.el-table__cell),
+.table-container :deep(.el-table__fixed-body-wrapper tr.hover-row > td.el-table__cell),
+.table-container :deep(.el-table__fixed-right tr.hover-row > td.el-table__cell),
+.table-container :deep(.el-table__fixed-right-patch tr.hover-row > td.el-table__cell) {
+  background-color: rgba(59, 130, 246, 0.05) !important;
+}
+
+/* fixed 列阴影清除 */
+.table-container :deep(.el-table__fixed-right) {
+  border-left: 1px solid rgba(0, 0, 0, 0.06);
+  background-color: transparent;
+}
+.table-container :deep(.el-table__fixed-right-patch) { background-color: transparent; }
+.table-container :deep(.el-table__fixed-right)::before,
+.table-container :deep(.el-table__fixed-right)::after,
+.table-container :deep(.el-table__fixed)::before,
+.table-container :deep(.el-table__fixed)::after {
+  box-shadow: none !important;
+  background: transparent !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* 用户列 */
+.user-info-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 14px;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.4), 0 1px 2px rgba(0, 0, 0, 0.1);
+  letter-spacing: 0.5px;
+}
+
+.user-detail {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  line-height: 1.4;
+}
+
+.user-name {
+  font-weight: 600;
+  color: #0f172a;
+  font-size: 14px;
+}
+
+.user-email {
+  color: #64748b;
+  font-size: 12px;
+}
+
+/* 角色 badge */
+.role-cell { display: flex; align-items: center; }
+
+.role-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid transparent;
+  min-width: 64px;
+}
+
+/* 管理员 - 紫色 */
+.role-tag-admin {
+  background-color: #f5f3ff;
+  color: #7c3aed;
+  border-color: #ddd6fe;
+  box-shadow: 0 1px 3px rgba(124, 58, 237, 0.12);
+}
+
+/* 普通用户 - 蓝灰 */
+.role-tag-user {
+  background-color: #f0f9ff;
+  color: #0369a1;
+  border-color: #bae6fd;
+  box-shadow: 0 1px 3px rgba(3, 105, 161, 0.1);
+}
+
+/* 状态 badge */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* 启用 - 绿色 */
+.status-badge.status-active {
+  background-color: #ecfdf5;
+  color: #059669;
+  border-color: #a7f3d0;
+  box-shadow: 0 1px 3px rgba(5, 150, 105, 0.12);
+}
+.status-badge.status-active .status-dot { background-color: #10b981; }
+
+/* 禁用 - 红色 */
+.status-badge:not(.status-active) {
+  background-color: #fef2f2;
+  color: #dc2626;
+  border-color: #fecaca;
+  box-shadow: 0 1px 3px rgba(220, 38, 38, 0.1);
+}
+.status-badge:not(.status-active) .status-dot { background-color: #ef4444; }
+
+/* 操作按钮 */
 .action-buttons {
   display: inline-flex;
   align-items: center;
@@ -181,35 +324,14 @@ const getAvatarStyle = () => {
   line-height: 1.5;
 }
 
-/* 编辑 - 品牌色 */
-.action-edit {
-  color: #3b82f6;
-}
+.action-edit { color: #3b82f6; }
+.action-edit:hover { background-color: #eff6ff; color: #2563eb; }
 
-.action-edit:hover {
-  background-color: #eff6ff;
-  color: #2563eb;
-}
+.action-normal { color: #64748b; }
+.action-normal:hover { background-color: #f1f5f9; color: #3b82f6; }
 
-/* 常规操作 - 灰色，hover变品牌色 */
-.action-normal {
-  color: #64748b;
-}
-
-.action-normal:hover {
-  background-color: #f1f5f9;
-  color: #3b82f6;
-}
-
-/* 删除 - 红色 */
-.action-delete {
-  color: #ef4444;
-}
-
-.action-delete:hover {
-  background-color: #fef2f2;
-  color: #dc2626;
-}
+.action-delete { color: #ef4444; }
+.action-delete:hover { background-color: #fef2f2; color: #dc2626; }
 
 .action-divider {
   width: 1px;
@@ -217,202 +339,5 @@ const getAvatarStyle = () => {
   background-color: #cbd5e1;
   margin: 0 2px;
   opacity: 0.5;
-}
-
-.role-cell {
-  display: flex;
-  align-items: center;
-}
-
-.role-tag {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2px 10px;
-  border-radius: 999px; /* Pill shape */
-  font-size: 12px;
-  font-weight: 500;
-  border: 1px solid transparent;
-  min-width: 64px;
-}
-
-/* 管理员 - 浅蓝背景，深蓝字 */
-.role-tag-admin {
-  background-color: #eff6ff;
-  color: #3b82f6;
-  border-color: #dbeafe;
-}
-
-/* 普通用户 - 浅灰背景，深灰字 */
-.role-tag-user {
-  background-color: #f8fafc;
-  color: #64748b;
-  border-color: #e2e8f0;
-}
-
-.status-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  font-weight: 500;
-  padding: 2px 10px;
-  border-radius: 999px;
-  border: 1px solid transparent;
-}
-
-.status-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-}
-
-/* 启用状态 - 绿色 */
-.status-badge.status-active {
-  background-color: #ecfdf5;
-  color: #059669;
-  border-color: #a7f3d0;
-}
-
-.status-badge.status-active .status-dot {
-  background-color: #10b981;
-}
-
-/* 禁用状态 - 橙色 */
-.status-badge:not(.status-active) {
-  background-color: #fff7ed;
-  color: #ea580c;
-  border-color: #fed7aa;
-}
-
-.status-badge:not(.status-active) .status-dot {
-  background-color: #f97316;
-}
-
-.table-container :deep(.el-table) {
-  --el-table-border-color: rgba(0, 0, 0, 0.06);
-}
-
-.user-info-cell {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.user-avatar {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 15px;
-  flex-shrink: 0;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
-  text-shadow: none;
-  position: relative;
-  overflow: hidden;
-  transition: all 0.2s ease;
-}
-
-.user-avatar:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-  transform: translateY(-2px);
-}
-
-/* 精致的光泽效果 */
-.user-avatar::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.1) 40%, rgba(0, 0, 0, 0.03) 100%);
-  border-radius: 12px;
-  pointer-events: none;
-}
-
-.user-detail {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  line-height: 1.4;
-}
-
-.user-name {
-  font-weight: 600;
-  color: #0f172a; /* Slate 900 - Darker */
-  font-size: 14px;
-}
-
-.user-email {
-  color: #64748b;
-  font-size: 12px;
-}
-
-.table-container :deep(.el-table__header th) {
-  background: rgba(248, 250, 252, 0.95);
-  color: #475569; /* Slate 600 - Darker than before */
-  font-weight: 600;
-  font-size: 12px;
-  padding: 12px 0;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  border-bottom: 1px solid #e2e8f0;
-}
-
-.table-container :deep(.el-table__body td) {
-  padding: 12px 0;
-  color: #334155;
-  font-size: 13px;
-}
-
-.table-container :deep(.el-table__row:hover td) {
-  background: rgba(59, 130, 246, 0.04);
-}
-
-.table-container :deep(.el-table__row) {
-  transition: background-color 0.2s ease;
-}
-
-/* Hover 行在 fixed 列(右侧操作列)会是另一张表，必须一起覆盖，否则会出现“浅蓝不均匀” */
-.table-container :deep(.el-table__body tr.hover-row > td.el-table__cell),
-.table-container :deep(.el-table__fixed-body-wrapper tr.hover-row > td.el-table__cell),
-.table-container :deep(.el-table__fixed-right tr.hover-row > td.el-table__cell),
-.table-container :deep(.el-table__fixed-right-patch tr.hover-row > td.el-table__cell) {
-  background-color: rgba(59, 130, 246, 0.06) !important;
-}
-
-/* 小屏/横向滚动时，fixed-right 会有阴影叠加在背景上，导致 hover 看起来“少一截/重叠”。
-   这里改成更干净的分割线，避免阴影对 hover 颜色造成影响。 */
-.table-container :deep(.el-table__fixed-right) {
-  border-left: 1px solid rgba(0, 0, 0, 0.06);
-  background-color: transparent;
-}
-
-.table-container :deep(.el-table__fixed-right-patch) {
-  background-color: transparent;
-}
-
-.table-container :deep(.el-table__fixed-right)::before {
-  /* Element Plus 的固定列阴影遮罩 */
-  box-shadow: none !important;
-  background: transparent !important;
-  opacity: 0 !important;
-  pointer-events: none !important;
-}
-
-/* 有些版本阴影在 ::after 或 fixed 容器上（横向滚动时），这里一并禁用，避免 hover 颜色被叠层压暗 */
-.table-container :deep(.el-table__fixed-right)::after,
-.table-container :deep(.el-table__fixed)::before,
-.table-container :deep(.el-table__fixed)::after {
-  box-shadow: none !important;
-  background: transparent !important;
-  opacity: 0 !important;
-  pointer-events: none !important;
 }
 </style>

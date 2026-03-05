@@ -1,14 +1,14 @@
 // 公司管理API
 
-import type { Company, CreateCompanyRequest, UpdateCompanyRequest } from './types'
+import type { Company, CreateCompanyRequest, UpdateCompanyRequest, CompanyListResponse } from './types'
 import { http } from '../../http'
 
 export class CompanyApi {
   /**
    * 获取公司列表 - GET /admin/companies/
    */
-  static async getCompanies(): Promise<Company[]> {
-    return http.get<Company[]>('/admin/companies')
+  static async getCompanies(): Promise<CompanyListResponse> {
+    return http.get<CompanyListResponse>('/admin/companies')
   }
 
   /**
@@ -43,6 +43,7 @@ export class CompanyApi {
    * 获取公司用户列表 - GET /admin/companies/{company_id}/users
    */
   static async getCompanyUsers(companyId: number): Promise<any[]> {
-    return http.get<any[]>(`/admin/companies/${companyId}/users`)
+    const data = await http.get<{ users: any[] }>(`/admin/companies/${companyId}/users`)
+    return data?.users ?? []
   }
 }

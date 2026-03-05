@@ -44,6 +44,7 @@
       v-model:visible="showCreateDialog"
       :form="workflowForm"
       :is-edit="false"
+      :categories="categories"
       @save="saveWorkflow"
     />
 
@@ -51,6 +52,7 @@
       v-model:visible="showEditDialog"
       :form="workflowForm"
       :is-edit="true"
+      :categories="categories"
       @save="saveWorkflow"
     />
   </div>
@@ -71,7 +73,9 @@ const {
   showEditDialog,
   workflowForm,
   paginatedWorkflows,
+  categories,
   loadWorkflows,
+  loadCategories,
   editWorkflow,
   deleteWorkflow,
   saveWorkflow,
@@ -82,6 +86,7 @@ const {
 
 onMounted(() => {
   loadWorkflows()
+  loadCategories()
 })
 </script>
 

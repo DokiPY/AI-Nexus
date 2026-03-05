@@ -65,7 +65,9 @@ export class LoginApi {
       throw new Error('用户验证失败')
     }
     
-    const userInfo = await response.json()
+    const result = await response.json()
+    // 后端统一响应格式：{ success, code, message, data }
+    const userInfo = result?.data ?? result
     this.saveUserInfo(userInfo)
     return userInfo
   }
@@ -87,7 +89,9 @@ export class LoginApi {
       throw new Error('获取公司信息失败')
     }
     
-    return await response.json()
+    const result = await response.json()
+    // 后端统一响应格式：{ success, code, message, data: { companies: [...] } }
+    return result.data?.companies ?? result.data ?? result
   }
 
   /**
