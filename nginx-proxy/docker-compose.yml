@@ -1,9 +1,4 @@
 # nginx-proxy/docker-compose.yml
-# ============================================
-# 外层反向代理，按域名分发到各应用
-# 用法: docker compose up -d
-# 添加新应用: 在 conf.d/ 下新增 .conf 文件，reload 即可
-# ============================================
 
 services:
   nginx-proxy:
@@ -15,6 +10,7 @@ services:
     volumes:
       - ./conf.d:/etc/nginx/conf.d:ro
       - ./ssl:/etc/nginx/ssl:ro
+      - ./certbot-webroot:/var/www/certbot:ro
     restart: unless-stopped
     networks:
       - nginx-proxy
