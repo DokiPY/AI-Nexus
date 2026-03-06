@@ -30,8 +30,9 @@ class Settings(BaseSettings):
     
     @property
     def DATABASE_URL(self) -> str:
-        """动态生成数据库连接 URL"""
-        return f"postgresql://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
+        """动态生成数据库连接 URL（安全处理密码中的特殊字符）"""
+        from urllib.parse import quote_plus
+        return f"postgresql://{quote_plus(self.DB_USER)}:{quote_plus(self.DB_PASSWORD)}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
     
     # JWT配置
     SECRET_KEY: str
