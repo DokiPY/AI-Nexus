@@ -1,0 +1,24 @@
+# nginx-proxy/docker-compose.yml
+# ============================================
+# 外层反向代理，按域名分发到各应用
+# 用法: docker compose up -d
+# 添加新应用: 在 conf.d/ 下新增 .conf 文件，reload 即可
+# ============================================
+
+services:
+  nginx-proxy:
+    container_name: nginx-proxy
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./conf.d:/etc/nginx/conf.d:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    restart: unless-stopped
+    networks:
+      - nginx-proxy
+
+networks:
+  nginx-proxy:
+    external: true
