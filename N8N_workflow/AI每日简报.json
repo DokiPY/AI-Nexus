@@ -1,0 +1,342 @@
+{
+  "name": "AI每日简报",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "https://news.google.com/rss?hl=zh-https://news.google.com/rss?hl=zh-CN&gl=CN&ceid=CN:zh-HansTW&gl=TW&ceid=TW:zh-Hant",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        848,
+        -336
+      ],
+      "id": "578b5b58-9dee-4054-a476-b882b3449bae",
+      "name": "RSS Read"
+    },
+    {
+      "parameters": {
+        "jsCode": "// 清洗 RSS 輸入資料並格式化日期\nreturn items.map(item => {\n  const data = item.json;\n\n  // 取 title\n  const title = data.title?.trim() || \"\";\n\n  // 清理 contentSnippet 或 content 中的 HTML\n  const textContent = (data.contentSnippet || data.content || \"\")\n    .replace(/<[^>]+>/g, \"\")      // 移除 HTML 標籤\n    .replace(/&nbsp;/g, \" \")      // 空白實體\n    .replace(/\\s+/g, \" \")         // 多餘空白\n    .trim();\n\n  // 格式化日期（轉換為台北時區 YYYY-MM-DD HH:mm）\n  let dateISO = data.isoDate || data.pubDate || \"\";\n  let formattedDate = \"\";\n\n  if (dateISO) {\n    try {\n      const dateObj = new Date(dateISO);\n      // 轉換為台北時間 (UTC+8)\n      const taipeiTime = new Date(dateObj.getTime() + 8 * 60 * 60 * 1000);\n      const y = taipeiTime.getFullYear();\n      const m = String(taipeiTime.getMonth() + 1).padStart(2, \"0\");\n      const d = String(taipeiTime.getDate()).padStart(2, \"0\");\n      const hh = String(taipeiTime.getHours()).padStart(2, \"0\");\n      const mm = String(taipeiTime.getMinutes()).padStart(2, \"0\");\n      formattedDate = `${y}-${m}-${d} ${hh}:${mm}`;\n    } catch (e) {\n      formattedDate = dateISO;\n    }\n  }\n\n  // 整合為乾淨輸出\n  return {\n    json: {\n      title,\n      summary: textContent,\n      date: formattedDate,\n      link: data.link || \"\"\n    }\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1072,
+        -336
+      ],
+      "id": "5ffe59a5-ce07-486a-8f2f-e3cd6406757d",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=你是一名专业的新闻简报编辑，负责生成每日 AI 新闻简报。\n\n请根据以下 {{ $json.count }} 则新闻资料，\n整理出一份结构清晰、适合快速阅读的「今日 AI 新闻简报」。\n\n【写作要求】\n- 使用自然、正式的中文\n- 语气中性、客观\n- 不使用 Markdown 或 HTML 语法\n- 不使用加粗、符号强调或特殊标签\n- 通过清晰的段落结构表达重点\n- 内容适合 3～5 分钟内阅读完毕\n\n【输出结构（请严格遵守）】\n【今日焦点】\n（1～2 句话概括整体重点）\n\n【主要事件】\n1. 事件名称：简要说明。\n2. 事件名称：简要说明。\n\n【趋势观察】\n1. 趋势描述。\n2. 趋势描述。\n\n【其他资讯】\n1. 简要资讯。\n2. 简要资讯。\n\n以下是新闻资料：\n{{ $json.all_news }}\n",
+        "options": {
+          "systemMessage": "你是一位專業新聞分析助理，負責閱讀多篇新聞內容，\n並整合成一份邏輯清晰、語氣中立的 AI 簡報。\n請聚焦重點事件、趨勢與關鍵主題。"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1568,
+        -336
+      ],
+      "id": "0c49c8af-f5cf-4de6-acd5-94b5a719f701",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatDeepSeek",
+      "typeVersion": 1,
+      "position": [
+        1488,
+        -128
+      ],
+      "id": "31a79e7b-062f-40c6-a489-89ea796cb0d2",
+      "name": "DeepSeek Chat Model",
+      "credentials": {
+        "deepSeekApi": {
+          "id": "QPtQ4mnCLD2WIM3N",
+          "name": "DeepSeek account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// 把所有新闻项合并成一条输入\nconst combined = items.map(item => {\n  const d = item.json;\n  return `【標題】${d.title}\\n【時間】${d.date}\\n【摘要】${d.summary}\\n【來源】${d.link}`;\n}).join('\\n\\n');\n\nreturn [{\n  json: {\n    all_news: combined,\n    count: items.length\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1280,
+        -336
+      ],
+      "id": "cb3b6c47-e381-4a9d-9f69-6e9c1b365104",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "html": "<!DOCTYPE html>\n<html>\n  <head>\n    <meta charset=\"UTF-8\" />\n    <title>今日 AI 新闻简报</title>\n  </head>\n\n  <body style=\"margin:0; padding:0; background-color:#fafafa;\">\n    <table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"background-color:#fafafa;\">\n      <tr>\n        <td align=\"center\" style=\"padding:30px;\">\n\n          <!-- 主容器 -->\n          <table width=\"680\" cellpadding=\"0\" cellspacing=\"0\" style=\"background-color:#ffffff; border-radius:8px;\">\n            \n            <!-- 标题 -->\n            <tr>\n              <td style=\"padding:20px 20px 10px 20px;\">\n                <div style=\"font-size:22px; font-weight:bold; color:#2a5bd7;\">\n                  📰 今日 AI 新闻简报\n                </div>\n                <div style=\"height:3px; background-color:#2a5bd7; margin-top:8px;\"></div>\n              </td>\n            </tr>\n\n            <!-- 正文内容 -->\n            <tr>\n              <td style=\"padding:20px; font-size:15px; line-height:1.8; color:#333333; text-align:left;\">\n                {{ $json.output.replace(/\\n/g, '<br/>') }}\n              </td>\n            </tr>\n\n          </table>\n\n          <!-- 页脚 -->\n          <table width=\"680\" cellpadding=\"0\" cellspacing=\"0\">\n            <tr>\n              <td style=\"padding-top:20px; font-size:12px; color:#666666; text-align:left;\">\n                新闻来源：Google News · 中文新闻聚合<br/>\n                本简报由 <strong>Nexus AI</strong> 自动整理生成<br/>\n                {{ new Date().toLocaleString(\"zh-CN\", { timeZone: \"Asia/Shanghai\" }) }}\n              </td>\n            </tr>\n          </table>\n\n        </td>\n      </tr>\n    </table>\n  </body>\n</html>\n"
+      },
+      "type": "n8n-nodes-base.html",
+      "typeVersion": 1.2,
+      "position": [
+        1920,
+        -336
+      ],
+      "id": "2f5b8e09-74ce-44fd-9ee9-aff0cee6d125",
+      "name": "HTML"
+    },
+    {
+      "parameters": {
+        "fromEmail": "2805820244@qq.com",
+        "toEmail": "={{ $items('If')[0].json.email }}",
+        "subject": "=📰 AI 每日新聞簡報 - {{ new Date().toLocaleDateString(\"zh-TW\") }}",
+        "html": "={{ $json.html }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        2128,
+        -336
+      ],
+      "id": "554e5772-e89e-4ec1-a084-66872440ca33",
+      "name": "Send email",
+      "webhookId": "b22a01a3-1044-483b-8de8-eb5bafd02242",
+      "credentials": {
+        "smtp": {
+          "id": "n2lBbgSKCzMV2yka",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "subscribe-daily-brief",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        64,
+        -208
+      ],
+      "id": "b589e76b-7c1a-4470-b944-f3769f86ccfe",
+      "name": "Webhook",
+      "webhookId": "d8d73b7d-81e0-4e2c-b9a8-3882336cfeae"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Webhook -> Code 节点\nconst body = $json.body;\n\n// AI 回复统一格式（异常用）\nfunction aiReply(message) {\n  return [\n    {\n      json: {\n        success: false,   // 👈 显式 false\n        output: message\n      }\n    }\n  ];\n}\n\n// 从用户输入中提取邮箱\nfunction extractEmail(text) {\n  if (!text || typeof text !== 'string') return null;\n  const match = text.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}/i);\n  return match ? match[0] : null;\n}\n\n// 1️⃣ 没有收到 body → 拦截\nif (!body || typeof body !== 'object') {\n  return aiReply(\n    '您好，我是 AI 每日简报助手 🙂\\n请告诉我需要发送到哪个邮箱。'\n  );\n}\n\n// 2️⃣ 没有 message → 拦截\nif (!body.message) {\n  return aiReply(\n    '您好，我是 AI 每日简报助手。\\n请直接告诉我收件人的邮箱地址，例如：\\n收件人邮箱：example@email.com'\n  );\n}\n\n// 3️⃣ 从 message 中抽取邮箱\nconst email = extractEmail(body.message);\n\n// 4️⃣ 没抽到邮箱 → 拦截\nif (!email) {\n  return aiReply(\n    '您好，我是 AI 每日简报助手。\\n我还没有识别到收件人的邮箱地址，请再告诉我一次，例如：\\n收件人邮箱：example@email.com'\n  );\n}\n\n// ✅ 5️⃣ 成功：放行\nreturn [\n  {\n    json: {\n      success: true,        // 👈 显式 true\n      email,                // 给后面用\n      user: body.user || {},// 可选\n      source: 'daily_brief' // 可选\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        336,
+        -208
+      ],
+      "id": "ed8158ef-29e0-4b6d-a031-6fa220a32539",
+      "name": "验证用户输入"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "d69ee3e3-6989-4bb1-95eb-af7c0551b7d8",
+              "leftValue": "={{ $json.success }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        544,
+        -208
+      ],
+      "id": "3b99f283-35b4-41c8-bc42-5a774fd3dc9c",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        832,
+        -96
+      ],
+      "id": "8b166236-179c-45d4-9fe8-330cb3fc5f29",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"output\": \"我已经成功帮你把邮件发送到 {{ $json.envelope.to[0] }}，请留意收件匣。\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        2336,
+        -336
+      ],
+      "id": "6da92950-1aa7-4739-89ef-eeb31a91e35f",
+      "name": "Respond to Webhook1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "RSS Read": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DeepSeek Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "HTML",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML": {
+      "main": [
+        [
+          {
+            "node": "Send email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "验证用户输入",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "验证用户输入": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "RSS Read",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send email": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "406e6824-a517-4f56-af81-b3d4fd43ecaa",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "4b20cd119ac8cc12542388f074f8bd4300c6a3d45684bd6aa238f914ede6f7d2"
+  },
+  "id": "wnXApcs1Qfn9wEbV",
+  "tags": []
+}
